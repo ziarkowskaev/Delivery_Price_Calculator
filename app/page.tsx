@@ -1,36 +1,19 @@
-import { Button } from "@/components/ui/button"
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
+import Image from "next/image";
+import { DeliveryForm } from "./components/deliveryForm";
+import { Summary } from "./components/summary";
 
 export default function Home() {
   return (
-    <Form >
-      <form className="space-y-8">
-        <FormField
-          name="username"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Username</FormLabel>
-              <FormControl>
-                <Input placeholder="shadcn" {...field} />
-              </FormControl>
-              <FormDescription>
-                This is your public display name.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button type="submit">Submit</Button>
-      </form>
-    </Form>
-  )
+    <div>
+      <main>
+        <div className="bg-stone-200 m-20 rounded-xl"> 
+        <h1 className="text-3xl text-center font-bold pt-8">Delivery Order Price Calculator</h1>
+        <div className="flex flex-row justify-between m-16">
+          <DeliveryForm />
+          <Summary />
+        </div>
+        </div>
+      </main>
+    </div>
+  );
 }
