@@ -1,8 +1,12 @@
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Button } from "./ui/button"
+import { Input } from "./ui/input"
 import { Label } from "@radix-ui/react-label"
-import Image from "next/image"
-import MapComponent from "./map"
+import dynamic from "next/dynamic";
+
+const DynamicMap = dynamic(() => import('./Map'), {
+    loading: () => <p>A map is loading</p>,
+    ssr: false,
+  });
 
 export const LocationSearch = () => {
     return(
@@ -10,7 +14,7 @@ export const LocationSearch = () => {
             <div className="grid w-full max-w-sm items-center gap-1.5">
                 <Label htmlFor="search_location">Search location</Label>
                 <Input className="bg-stone-50" type="search" id="search_location" placeholder="Location" />
-              <MapComponent />
+                <DynamicMap position={[51.505, -0.09]} zoom={17} />
             </div>
             <Button variant="outline">Get Live Location</Button>
         </div>

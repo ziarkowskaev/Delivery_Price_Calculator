@@ -1,4 +1,3 @@
-import { Label } from "@radix-ui/react-label"
 
 export const PriceBreakdown = () => {
     return(

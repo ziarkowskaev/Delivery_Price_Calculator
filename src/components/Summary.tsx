@@ -1,5 +1,5 @@
 import { Label } from "@radix-ui/react-label"
-import { PriceBreakdown } from "./priceBreakdown"
+import { PriceBreakdown } from "./PriceBreakdown"
 
 export const Summary = () => {
     return(

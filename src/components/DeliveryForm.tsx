@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@radix-ui/react-label"
-import { LocationSearch } from "./locationSearch"
+import { LocationSearch } from "./LocationSearch"
 
 export const DeliveryForm = () => {
     return(

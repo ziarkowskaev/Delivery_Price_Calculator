@@ -1,6 +1,6 @@
 import Image from "next/image";
-import { DeliveryForm } from "./components/deliveryForm";
-import { Summary } from "./components/summary";
+import { DeliveryForm } from "../components/DeliveryForm";
+import { Summary } from "../components/Summary";
 
 export default function Home() {
   return (
