@@ -6,7 +6,7 @@ import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility
 export default function MyMap({ position, zoom }: { position: [number, number]; zoom: number }) {
   return (
     <div style={{borderRadius:"30px"}}>
-      <MapContainer center={position} zoom={zoom} scrollWheelZoom={false} style={{ height: '200px', width: '300px',borderRadius:"30px", borderColor:"blue"}}>
+      <MapContainer center={position} zoom={zoom} scrollWheelZoom={false} style={{ height: '200px', width: '300px',borderRadius:"30px", borderColor:"blue", zIndex:0}}>
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
