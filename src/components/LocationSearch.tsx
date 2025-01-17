@@ -14,7 +14,7 @@ export const LocationSearch = () => {
             <div className="grid w-full max-w-sm items-center gap-1.5">
                 <Label htmlFor="search_location">Search location</Label>
                 <Input className="bg-stone-50" type="search" id="search_location" placeholder="Location" />
-                <DynamicMap position={[51.505, -0.09]} zoom={17} />
+                <DynamicMap position={[60.2055, 24.6559]} zoom={17} />
             </div>
             <Button variant="outline">Get Live Location</Button>
         </div>
