@@ -6,9 +6,9 @@ export default function Home() {
   return (
     <div>
       <main>
-        <div className="bg-stone-200 m-20 rounded-xl"> 
-        <h1 className="text-3xl text-center font-bold pt-8">Delivery Order Price Calculator</h1>
-        <div className="flex flex-row justify-between m-16">
+        <div className="bg-neutral-100 m-20 rounded-xl"> 
+        <h1 className="text-3xl text-center font-bold pt-8 text-neutral-800">Delivery Order Price Calculator</h1>
+        <div className="flex flex-row justify-around m-16">
           <DeliveryForm />
           <Summary />
         </div>

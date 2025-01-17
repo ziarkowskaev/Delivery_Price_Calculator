@@ -11,12 +11,12 @@ const DynamicMap = dynamic(() => import('./Map'), {
 export const LocationSearch = () => {
     return(
         <div>
-            <div className="grid w-full max-w-sm items-center gap-1.5">
-                <Label htmlFor="search_location">Search location</Label>
-                <Input className="bg-stone-50" type="search" id="search_location" placeholder="Location" />
-                <DynamicMap position={[60.2055, 24.6559]} zoom={17} />
+            <div className="grid w-full max-w-sm items-center gap-1.5 text-neutral-800 my-4">
+                <Label>Location</Label>
+                
+                <DynamicMap position={[60.1841, 24.8301]} zoom={17} />
             </div>
-            <Button variant="outline">Get Live Location</Button>
+            <Button variant={"outline"} className="text-neutral-800">Get Live Location</Button>
         </div>
     )
 }

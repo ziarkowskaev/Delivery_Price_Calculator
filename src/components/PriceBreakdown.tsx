@@ -1,7 +1,7 @@
 
 export const PriceBreakdown = () => {
     return(
-        <div className="text-stone-200 ">
+        <div className="text-neural-200 ">
             <h2 className="text-xl text-center font-bold mt-12">Price Breakdown</h2>
             <div className="grid grid-cols-2 gap-3 mt-8">
                 <div className="text-center"><p>Cart value</p><p>10.00€</p></div>
