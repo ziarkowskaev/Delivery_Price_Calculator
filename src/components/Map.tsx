@@ -1,7 +1,18 @@
-import { MapContainer, Marker, TileLayer, Tooltip } from 'react-leaflet';
+import { MapContainer, Marker, TileLayer, Tooltip, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
+import { useEffect } from 'react';
+
+function UpdateMapView({ position }: { position: [number, number] }) {
+  const map = useMap();
+
+  useEffect(() => {
+    map.setView(position);
+  }, [map, position]);
+
+  return null;
+}
 
 export default function MyMap({ position, zoom }: { position: [number, number]; zoom: number }) {
   return (
@@ -14,6 +25,7 @@ export default function MyMap({ position, zoom }: { position: [number, number]; 
       <Marker position={position}>
         <Tooltip>A pretty CSS3 popup. <br /> Easily customizable.</Tooltip>
       </Marker>
+      <UpdateMapView position={position} />
     </MapContainer>
 
     </div>
