@@ -1,35 +1,117 @@
 import { useFormValue } from "@/context/formContext"
 import { useSummaryValue } from "@/context/summaryContext";
 import { Summary } from "@/types/types";
-import { dynamicInfoVenue, staticInfoVenue } from "@/utils/utils";
+import {dynamicInfoVenue, staticInfoVenue } from "@/utils/utils";
 
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Button } from "./ui/button";
+import axios from 'axios'
+const geolib = require('geolib');
+import { getDistance } from 'geolib';
 
+interface DistanceRange{
+    min: number,
+    max: number,
+    a: number,
+    b: number,
+    flag: null
 
-export const PriceBreakdown = (setTotalPrice: any) => {
+}
 
-    //small order charge = order_minimum_no_surcharge - cart value
+interface VenueData{
+    orderMinimumNoSurcharge: number,
+    distanceRanges: DistanceRange[],
+    basePrice: number,
+    orderMinimum: number,
+    venueLatitude: number,
+    venueLongitude: number,
+}
 
-    //distance = straight line from user to venue
+const calculateDeliveryFee = (distance: number, distanceRanges: DistanceRange[], basePrice: number) => {
+    for (const range of distanceRanges) {
+      if (distance > range.min && (range.max === 0 || distance <= range.max)) {
+        return basePrice + range.a + (range.b * distance) / 10;
+      }
+    }
+    throw new Error('Delivery not possible'); // Handle gracefully in calling function
+  };
 
-    //delivery fee = base_price + a + (b * distance / 10)
+export const PriceBreakdown = ({setTotalPrice}) => {
+
+    const [venueData, setVenueData] = useState({
+        orderMinimumNoSurcharge: 0,
+        distanceRanges: [
+            {
+              "min": 0,
+              "max": 500,
+              "a": 0,
+              "b": 0,
+              "flag": null
+            },
+            {
+              "min": 500,
+              "max": 1000,
+              "a": 100,
+              "b": 1,
+              "flag": null
+            },
+            {
+              "min": 1000,
+              "max": 0,
+              "a": 0,
+              "b": 0,
+              "flag": null
+            }
+          ],
+        basePrice: 0,
+        orderMinimum: 0,
+        venueLatitude: 0,
+        venueLongitude: 0,
+    });
+
 
     const formData = useFormValue();
     const venueSlug = formData.venueSlug;
-    const promiseStatic = staticInfoVenue(venueSlug);
-    promiseStatic.then(response => console.log(response.data))
-    const promiseDynamic = dynamicInfoVenue(venueSlug);
 
-    const latitude = formData.userLatitude;
-    const longitude = formData.userLongitude;
-
+    const userLatitude = formData.userLatitude;
+    const userLongitude = formData.userLongitude;
 
     const cartValue = formData.cartValue/100;
-    const smallOrderSurcharge = (0 - formData.cartValue)/100;
-    const distance = 0
-    const deliveryFee = 0
 
     //setTotalPrice(cartValue+smallOrderSurcharge+deliveryFee);
+
+        
+useEffect(()=>{
+    axios.get(`https://consumer-api.development.dev.woltapi.com/home-assignment-api/v1/venues/${venueSlug}/static`).then(response => {
+                setVenueData((prevData:VenueData) => ({
+                    ...prevData,
+                    orderMinimum: response.data ? response.data.order_minimum : prevData.orderMinimum,
+                    venueLatitude: response.data ? response.data.venue_raw.location.coordinates[1] : prevData.venueLatitude,
+                    venueLongitude: response.data ? response.data.venue_raw.location.coordinates[0] : prevData.venueLongitude,
+                }))
+            })
+
+    axios.get(`https://consumer-api.development.dev.woltapi.com/home-assignment-api/v1/venues/${venueSlug}/dynamic`).then(response => {
+        setVenueData((prevData:VenueData) => ({
+            ...prevData,
+            orderMinimumNoSurcharge: response.data ? response.data.venue_raw.delivery_specs.order_minimum_no_surcharge: prevData.orderMinimumNoSurcharge,
+              distanceRanges: response.data ? response.data.venue_raw.delivery_specs.delivery_pricing.distance_ranges : prevData.distanceRanges,
+              basePrice:  response.data ? response.data.venue_raw.delivery_specs.delivery_pricing.base_price : prevData.basePrice,
+        }))
+    })
+    
+
+},[venueSlug])
+        
+     
+
+      const distance = getDistance({latitude:userLatitude, longitude:userLongitude}, {latitude:venueData.venueLatitude, longitude:venueData.venueLongitude});
+      const smallOrderSurcharge = (venueData.orderMinimumNoSurcharge - formData.cartValue) < 0 ? (venueData.orderMinimumNoSurcharge - formData.cartValue) : 0;
+      const deliveryFee = calculateDeliveryFee(distance, venueData.distanceRanges, venueData.basePrice);
+    
+    
+      console.log(venueData)
+      setTotalPrice(cartValue+smallOrderSurcharge+deliveryFee)
 
     return(
         <div className="text-neural-200 ">
