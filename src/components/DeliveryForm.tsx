@@ -3,26 +3,39 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@radix-ui/react-label";
 import { LocationSearch } from "./LocationSearch";
 import { useFormDispatch, useFormValue } from "@/context/formContext";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Formik, Field, Form } from "formik";
 import { FormInput } from "@/types/types";
 import * as Yup from "yup";
-import { dynamicInfoVenue, staticInfoVenue } from "@/utils/utils";
+import { useVenueValue } from "@/context/venueContext";
+import { getVenueData } from "@/utils/utils";
 
 export const DeliveryForm = () => {
   //if delivery is not possiblle, distance too long display error
 
   const dispatch = useFormDispatch();
   const formData = useFormValue();
-  const [venue, setVenue] = useState(formData.venueSlug);
+  const venueData = useVenueValue();
+  
+  const [venue, setVenue] = useState(formData.venueSlug || "");
   const [cartValue, setCartValue] = useState(formData.cartValue);
   const [userLongitude, setUserLongitude] = useState(formData.userLongitude);
   const [userLatitude, setUserLatitude] = useState(formData.userLatitude);
-  const [minimumOrderValue, setMinimumOrderValue] = useState(90);
+  const [fetchError, setFetchError] = useState("");
 
-  const promiseStatic = staticInfoVenue(venue);
-  //promiseStatic.then(response => setMinimumOrderValue(response.data.order_minimum));
-  const promiseDynamic = dynamicInfoVenue(venue);
+    useEffect(() => {
+      const fetchVenueDetails = async () => {
+        try {
+          setFetchError("");
+          await getVenueData(venue);
+        } catch (error) {
+          setFetchError("Failed to fetch venue details. Please check the venueSlug.");
+        }
+      };
+     if (venue) {
+        fetchVenueDetails();
+      }
+    }, [venue]);
 
   const DeliveryFormSchema = Yup.object().shape({
     venueSlug: Yup.string()
@@ -30,7 +43,7 @@ export const DeliveryForm = () => {
       .max(50, "Too Long!")
       .required("Provide venue information."),
     cartValue: Yup.number()
-      .min(minimumOrderValue / 100, "Cart value is to small!")
+      .min(venueData.orderMinimum / 100, "Cart value is to small!")
       .required("Provide cart value."),
     userLatitude: Yup.number().min(-90).max(90).required("Provide latitude."),
     userLongitude: Yup.number()
@@ -74,7 +87,10 @@ export const DeliveryForm = () => {
               id="venue"
               data-test-id="venueSlug"
               placeholder="Venue"
-              onChange={(e) => setVenue(e.target.value)}
+              onChange={(e) => {
+                setVenue(e.target.value)
+                
+              }}
             />
           </div>
 

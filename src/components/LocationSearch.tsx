@@ -46,30 +46,32 @@ export const LocationSearch = ({
 
   return (
     <div>
-      <div className="grid w-full max-w-sm items-center gap-1.5 text-neutral-800 my-4">
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
+      <div className="grid w-full max-w-sm items-center text-neutral-800 my-4">
+        <div>
+          <div>
             <Label htmlFor="latitude" className="text-right">
-              Latitude
+              User Latitude
             </Label>
             <Input
               id="latitude"
+              className="bg-neutral-50"
               type="number"
               value={userLatitude}
               onChange={(e) => setUserLatitude(Number(e.target.value) || 0)}
-              className="col-span-3"
+              step="0.0001"
             />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
+          <div>
             <Label htmlFor="longitude" className="text-right">
-              Longitude
+              User Longitude
             </Label>
             <Input
               id="longitude"
+              className="bg-neutral-50"
               type="number"
               value={userLongitude}
               onChange={(e) => setUserLongitude(Number(e.target.value) || 0)}
-              className="col-span-3"
+              step="0.0001"
             />
           </div>
         </div>

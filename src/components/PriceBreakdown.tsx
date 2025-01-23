@@ -1,6 +1,5 @@
 import { useFormValue } from "@/context/formContext";
-import { useSummaryValue } from "@/context/summaryContext";
-import { Summary } from "@/types/types";
+import { DistanceRange, Summary, Venue } from "@/types/types";
 import { dynamicInfoVenue, staticInfoVenue } from "@/utils/utils";
 import {
   HoverCard,
@@ -13,24 +12,8 @@ import { Button } from "./ui/button";
 import axios from "axios";
 const geolib = require("geolib");
 import { getDistance } from "geolib";
-import { Info } from 'lucide-react';
-
-interface DistanceRange {
-  min: number;
-  max: number;
-  a: number;
-  b: number;
-  flag: null;
-}
-
-interface VenueData {
-  orderMinimumNoSurcharge: number;
-  distanceRanges: DistanceRange[];
-  basePrice: number;
-  orderMinimum: number;
-  venueLatitude: number;
-  venueLongitude: number;
-}
+import { Info } from "lucide-react";
+import { useVenueValue } from "@/context/venueContext";
 
 const calculateDeliveryFee = (
   distance: number,
@@ -46,36 +29,8 @@ const calculateDeliveryFee = (
 };
 
 export const PriceBreakdown = ({ setTotalPrice }) => {
-  const [venueData, setVenueData] = useState({
-    orderMinimumNoSurcharge: 0,
-    distanceRanges: [
-      {
-        min: 0,
-        max: 500,
-        a: 0,
-        b: 0,
-        flag: null,
-      },
-      {
-        min: 500,
-        max: 1000,
-        a: 100,
-        b: 1,
-        flag: null,
-      },
-      {
-        min: 1000,
-        max: 0,
-        a: 0,
-        b: 0,
-        flag: null,
-      },
-    ],
-    basePrice: 0,
-    orderMinimum: 0,
-    venueLatitude: 0,
-    venueLongitude: 0,
-  });
+
+  const venueData = useVenueValue();
 
   const formData = useFormValue();
   const venueSlug = formData.venueSlug;
@@ -84,49 +39,6 @@ export const PriceBreakdown = ({ setTotalPrice }) => {
   const userLongitude = formData.userLongitude;
 
   const cartValue = formData.cartValue / 100;
-
-  //setTotalPrice(cartValue+smallOrderSurcharge+deliveryFee);
-
-  useEffect(() => {
-    axios
-      .get(
-        `https://consumer-api.development.dev.woltapi.com/home-assignment-api/v1/venues/${venueSlug}/static`,
-      )
-      .then((response) => {
-        setVenueData((prevData: VenueData) => ({
-          ...prevData,
-          orderMinimum: response.data
-            ? response.data.order_minimum
-            : prevData.orderMinimum,
-          venueLatitude: response.data
-            ? response.data.venue_raw.location.coordinates[1]
-            : prevData.venueLatitude,
-          venueLongitude: response.data
-            ? response.data.venue_raw.location.coordinates[0]
-            : prevData.venueLongitude,
-        }));
-      });
-
-    axios
-      .get(
-        `https://consumer-api.development.dev.woltapi.com/home-assignment-api/v1/venues/${venueSlug}/dynamic`,
-      )
-      .then((response) => {
-        setVenueData((prevData: VenueData) => ({
-          ...prevData,
-          orderMinimumNoSurcharge: response.data
-            ? response.data.venue_raw.delivery_specs.order_minimum_no_surcharge
-            : prevData.orderMinimumNoSurcharge,
-          distanceRanges: response.data
-            ? response.data.venue_raw.delivery_specs.delivery_pricing
-                .distance_ranges
-            : prevData.distanceRanges,
-          basePrice: response.data
-            ? response.data.venue_raw.delivery_specs.delivery_pricing.base_price
-            : prevData.basePrice,
-        }));
-      });
-  }, [venueSlug]);
 
   console.log(venueData.orderMinimumNoSurcharge);
   console.log(formData.cartValue);
@@ -142,11 +54,11 @@ export const PriceBreakdown = ({ setTotalPrice }) => {
   const deliveryFee = calculateDeliveryFee(
     distance,
     venueData.distanceRanges,
-    venueData.basePrice,
+    venueData.deliveryBasePrice,
   );
 
   console.log(venueData);
-  setTotalPrice((cartValue + smallOrderSurcharge + deliveryFee/100));
+  setTotalPrice(cartValue + smallOrderSurcharge + deliveryFee / 100);
 
   return (
     <div className="text-neural-200 ">
@@ -158,9 +70,15 @@ export const PriceBreakdown = ({ setTotalPrice }) => {
         </div>
         <div className="text-center">
           <HoverCard>
-            <HoverCardTrigger className="decoration-white"><div className="flex gap-2"><Info/><p>Small order surcharge</p></div></HoverCardTrigger>
+            <HoverCardTrigger className="decoration-white">
+              <div className="flex gap-2">
+                <Info />
+                <p>Small order surcharge</p>
+              </div>
+            </HoverCardTrigger>
             <HoverCardContent>
-            The minimum cart value to avoid small order surcharge {venueData.orderMinimumNoSurcharge/100} EUR.
+              The minimum cart value to avoid small order surcharge{" "}
+              {venueData.orderMinimumNoSurcharge / 100} EUR.
             </HoverCardContent>
           </HoverCard>
           <p data-raw-value="0">{smallOrderSurcharge}€</p>
@@ -171,7 +89,7 @@ export const PriceBreakdown = ({ setTotalPrice }) => {
         </div>
         <div className="text-center">
           <p>Delivery Fee</p>
-          <p data-raw-value="190">{deliveryFee/100}€</p>
+          <p data-raw-value="190">{deliveryFee / 100}€</p>
         </div>
       </div>
     </div>

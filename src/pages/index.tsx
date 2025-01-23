@@ -3,7 +3,7 @@ import { DeliveryForm } from "../components/DeliveryForm";
 import { Summary } from "../components/Summary";
 
 import axios from "axios";
-import { SummaryContextProvider } from "@/context/summaryContext";
+import { VenueContextProvider } from "@/context/venueContext";
 import FormContext, { FormContextProvider } from "@/context/formContext";
 
 export default function Home() {
@@ -16,10 +16,10 @@ export default function Home() {
           </h1>
           <div className="flex flex-row justify-around m-16">
             <FormContextProvider>
-              <SummaryContextProvider>
+              <VenueContextProvider>
                 <DeliveryForm />
                 <Summary />
-              </SummaryContextProvider>
+              </VenueContextProvider>
             </FormContextProvider>
           </div>
         </div>
