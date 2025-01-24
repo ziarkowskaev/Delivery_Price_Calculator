@@ -1,6 +1,5 @@
 import { Label } from "@radix-ui/react-label";
 import { PriceBreakdown } from "./PriceBreakdown";
-import { useSummaryValue } from "@/context/summaryContext";
 import { useState } from "react";
 
 export const Summary = () => {
