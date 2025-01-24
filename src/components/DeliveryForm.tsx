@@ -5,37 +5,103 @@ import { LocationSearch } from "./LocationSearch";
 import { useFormDispatch, useFormValue } from "@/context/formContext";
 import { useEffect, useState } from "react";
 import { Formik, Field, Form } from "formik";
-import { FormInput } from "@/types/types";
+import { FormInput, VenueData } from "@/types/types";
 import * as Yup from "yup";
-import { useVenueValue } from "@/context/venueContext";
-import { getVenueData } from "@/utils/utils";
+import axios from "axios";
+import { getDistance } from "geolib";
 
 export const DeliveryForm = () => {
-  //if delivery is not possiblle, distance too long display error
-
   const dispatch = useFormDispatch();
   const formData = useFormValue();
-  const venueData = useVenueValue();
-  
-  const [venue, setVenue] = useState(formData.venueSlug || "");
+  const [venue, setVenue] = useState(formData.venueSlug);
   const [cartValue, setCartValue] = useState(formData.cartValue);
-  const [userLongitude, setUserLongitude] = useState(formData.userLongitude);
-  const [userLatitude, setUserLatitude] = useState(formData.userLatitude);
-  const [fetchError, setFetchError] = useState("");
+  const [userLongitude, setUserLongitude] = useState(24.82958);
+  const [userLatitude, setUserLatitude] = useState(60.18527);
 
-    useEffect(() => {
-      const fetchVenueDetails = async () => {
-        try {
-          setFetchError("");
-          await getVenueData(venue);
-        } catch (error) {
-          setFetchError("Failed to fetch venue details. Please check the venueSlug.");
-        }
-      };
-     if (venue) {
-        fetchVenueDetails();
-      }
-    }, [venue]);
+  const [venueData, setVenueData] = useState({
+    orderMinimumNoSurcharge: 0,
+    distanceRanges: [
+      {
+        min: 0,
+        max: 500,
+        a: 0,
+        b: 0,
+        flag: null,
+      },
+      {
+        min: 500,
+        max: 1000,
+        a: 100,
+        b: 1,
+        flag: null,
+      },
+      {
+        min: 1000,
+        max: 0,
+        a: 0,
+        b: 0,
+        flag: null,
+      },
+    ],
+    deliveryBasePrice: 0,
+    orderMinimum: 0,
+    venueLatitude: 0,
+    venueLongitude: 0,
+  });
+
+  useEffect(() => {
+    axios
+      .get(
+        `https://consumer-api.development.dev.woltapi.com/home-assignment-api/v1/venues/${venue}/static`,
+      )
+      .then((response) => {
+        setVenueData((prevData: VenueData) => ({
+          ...prevData,
+          orderMinimum: response.data
+            ? response.data.order_minimum
+            : prevData.orderMinimum,
+          venueLatitude: response.data
+            ? response.data.venue_raw.location.coordinates[1]
+            : prevData.venueLatitude,
+          venueLongitude: response.data
+            ? response.data.venue_raw.location.coordinates[0]
+            : prevData.venueLongitude,
+        }));
+      })
+      .catch((error) => {
+        console.log("Error fetching dynamic venue data:", error);
+      });
+
+  axios
+      .get(
+        `https://consumer-api.development.dev.woltapi.com/home-assignment-api/v1/venues/${venue}/dynamic`,
+      )
+      .then((response) => {
+        setVenueData((prevData: VenueData) => ({
+          ...prevData,
+          orderMinimumNoSurcharge: response.data
+            ? response.data.venue_raw.delivery_specs.order_minimum_no_surcharge
+            : prevData.orderMinimumNoSurcharge,
+          distanceRanges: response.data
+            ? response.data.venue_raw.delivery_specs.delivery_pricing
+                .distance_ranges
+            : prevData.distanceRanges,
+          deliveryBasePrice: response.data
+            ? response.data.venue_raw.delivery_specs.delivery_pricing.base_price
+            : prevData.deliveryBasePrice,
+        }));
+        console.log(venueData)
+  
+      })
+      .catch((error) => {
+        console.log("Error fetching dynamic venue data:", error);
+      });
+  }, [venue]);
+
+  const distance = getDistance(
+    { latitude: userLatitude, longitude: userLongitude },
+    { latitude: venueData.venueLatitude, longitude: venueData.venueLongitude }
+  );
 
   const DeliveryFormSchema = Yup.object().shape({
     venueSlug: Yup.string()
@@ -52,12 +118,30 @@ export const DeliveryForm = () => {
       .required("Provide longitude."),
   });
 
-  const initialValues: FormInput = {
+  const update = () => {
+    dispatch({
+      type: "SET_FORM_INPUT",
+      payload: {
+        venueSlug: venue,
+        cartValue: cartValue,
+        distance: distance,
+        deliveryBasePrice: venueData.deliveryBasePrice,
+        distanceRanges: venueData.distanceRanges,
+        orderMinimumNoSurcharge: venueData.orderMinimumNoSurcharge,
+      },
+    });
+  };
+
+
+
+  const initialValues = {
     venueSlug: venue,
     cartValue: cartValue / 100,
     userLatitude: userLatitude,
     userLongitude: userLongitude,
   };
+
+  console.log(formData)
 
   return (
     <div>
@@ -65,15 +149,6 @@ export const DeliveryForm = () => {
         initialValues={initialValues}
         onSubmit={(values, actions) => {
           actions.setSubmitting(false);
-          dispatch({
-            type: "SET_FORM_INPUT",
-            payload: {
-              venueSlug: venue,
-              cartValue: cartValue * 100,
-              userLatitude: userLatitude,
-              userLongitude: userLongitude,
-            },
-          });
         }}
         validationSchema={DeliveryFormSchema}
       >
@@ -87,10 +162,7 @@ export const DeliveryForm = () => {
               id="venue"
               data-test-id="venueSlug"
               placeholder="Venue"
-              onChange={(e) => {
-                setVenue(e.target.value)
-                
-              }}
+              onChange={(e) => setVenue(e.target.value)}
             />
           </div>
 
@@ -115,7 +187,7 @@ export const DeliveryForm = () => {
             setUserLatitude={setUserLatitude}
             setUserLongitude={setUserLongitude}
           />
-          <Button type="submit" className="mt-2">
+          <Button onClick={update} type="submit" className="mt-2">
             Calculate delivery price
           </Button>
         </Form>
