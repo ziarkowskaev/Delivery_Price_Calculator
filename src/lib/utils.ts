@@ -12,9 +12,12 @@ export const calculateDeliveryFee = (
   deliveryBasePrice: number,
 ) => {
   for (const range of distanceRanges) {
-    if ((distance > range.min && (range.max === 0 || distance <= range.max)||distance==0)) {
+    if (
+      (distance > range.min && (range.max === 0 || distance <= range.max)) ||
+      distance == 0
+    ) {
       return deliveryBasePrice + range.a + (range.b * distance) / 10;
-
     }
   }
+  return 0;
 };

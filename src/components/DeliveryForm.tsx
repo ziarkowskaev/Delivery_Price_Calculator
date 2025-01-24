@@ -72,7 +72,7 @@ export const DeliveryForm = () => {
         console.log("Error fetching dynamic venue data:", error);
       });
 
-  axios
+    axios
       .get(
         `https://consumer-api.development.dev.woltapi.com/home-assignment-api/v1/venues/${venue}/dynamic`,
       )
@@ -90,8 +90,7 @@ export const DeliveryForm = () => {
             ? response.data.venue_raw.delivery_specs.delivery_pricing.base_price
             : prevData.deliveryBasePrice,
         }));
-        console.log(venueData)
-  
+        console.log(venueData);
       })
       .catch((error) => {
         console.log("Error fetching dynamic venue data:", error);
@@ -100,7 +99,7 @@ export const DeliveryForm = () => {
 
   const distance = getDistance(
     { latitude: userLatitude, longitude: userLongitude },
-    { latitude: venueData.venueLatitude, longitude: venueData.venueLongitude }
+    { latitude: venueData.venueLatitude, longitude: venueData.venueLongitude },
   );
 
   const DeliveryFormSchema = Yup.object().shape({
@@ -109,13 +108,26 @@ export const DeliveryForm = () => {
       .max(50, "Too Long!")
       .required("Provide venue information."),
     cartValue: Yup.number()
-      .min(venueData.orderMinimum / 100, "Cart value is to small!")
+      .min(
+        venueData.orderMinimum / 100,
+        `Cart value must be at least €${venueData.orderMinimum / 100}`,
+      )
       .required("Provide cart value."),
     userLatitude: Yup.number().min(-90).max(90).required("Provide latitude."),
     userLongitude: Yup.number()
       .min(-180)
       .max(180)
       .required("Provide longitude."),
+    distance: Yup.number().test(
+      "max-distance",
+      `Delivery is not available for your location.`,
+      function () {
+        const maxDistance = Math.max(
+          ...venueData.distanceRanges.map((range) => range.max || 0),
+        );
+        return distance <= maxDistance;
+      },
+    ),
   });
 
   const update = () => {
@@ -132,8 +144,6 @@ export const DeliveryForm = () => {
     });
   };
 
-
-
   const initialValues = {
     venueSlug: venue,
     cartValue: cartValue / 100,
@@ -141,7 +151,7 @@ export const DeliveryForm = () => {
     userLongitude: userLongitude,
   };
 
-  console.log(formData)
+  console.log(formData);
 
   return (
     <div>
@@ -152,45 +162,49 @@ export const DeliveryForm = () => {
         }}
         validationSchema={DeliveryFormSchema}
       >
-        <Form>
-          <div className="grid w-full max-w-m items-center gap-1.5 text-neutral-800">
-            <Label htmlFor="venue">Venue</Label>
-            <Input
-              name="venueSlug"
-              className="bg-neutral-50"
-              value={venue}
-              id="venue"
-              data-test-id="venueSlug"
-              placeholder="Venue"
-              onChange={(e) => setVenue(e.target.value)}
-            />
-          </div>
+        {({ errors, touched }) => (
+          <Form>
+            <div className="grid w-full max-w-m items-center gap-1.5 text-neutral-800">
+              <div>{errors.venueSlug}</div>
 
-          <div className="grid w-full max-w-sm items-center gap-1.5 text-neutral-800 mt-2">
-            <Label htmlFor="cart_value">Cart value EUR</Label>
-            <Input
-              name="cartValue"
-              value={cartValue}
-              className="bg-neutral-50"
-              type="number"
-              min={0}
-              step=".01"
-              id="cart_value"
-              data-test-id="cartValue"
-              placeholder="Cart value"
-              onChange={(e) => setCartValue(Number(e.target.value) || 0)}
+              <Label htmlFor="venue">Venue</Label>
+              <Input
+                name="venueSlug"
+                className="bg-neutral-50"
+                value={venue}
+                id="venue"
+                data-test-id="venueSlug"
+                placeholder="Venue"
+                onChange={(e) => setVenue(e.target.value)}
+              />
+            </div>
+
+            <div className="grid w-full max-w-sm items-center gap-1.5 text-neutral-800 mt-2">
+              <Label htmlFor="cart_value">Cart value EUR</Label>
+              <Input
+                name="cartValue"
+                value={cartValue}
+                className="bg-neutral-50"
+                type="number"
+                min={0}
+                step=".01"
+                id="cart_value"
+                data-test-id="cartValue"
+                placeholder="Cart value"
+                onChange={(e) => setCartValue(Number(e.target.value) || 0)}
+              />
+            </div>
+            <LocationSearch
+              userLatitude={userLatitude}
+              userLongitude={userLongitude}
+              setUserLatitude={setUserLatitude}
+              setUserLongitude={setUserLongitude}
             />
-          </div>
-          <LocationSearch
-            userLatitude={userLatitude}
-            userLongitude={userLongitude}
-            setUserLatitude={setUserLatitude}
-            setUserLongitude={setUserLongitude}
-          />
-          <Button onClick={update} type="submit" className="mt-2">
-            Calculate delivery price
-          </Button>
-        </Form>
+            <Button onClick={update} type="submit" className="mt-2">
+              Calculate delivery price
+            </Button>
+          </Form>
+        )}
       </Formik>
     </div>
   );
