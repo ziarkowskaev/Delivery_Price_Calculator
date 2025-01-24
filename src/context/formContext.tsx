@@ -33,9 +33,34 @@ export const FormContextProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const [form, formDispatch] = useReducer(formReducer, {
     venueSlug: "home-assignment-venue-helsinki",
-    cartValue: 1000,
-    userLatitude: 60.18395,
-    userLongitude: 24.82786,
+    cartValue: 0,
+    distance: 0,
+    orderMinimumNoSurcharge: 0,
+    distanceRanges: [
+      {
+        min: 0,
+        max: 500,
+        a: 0,
+        b: 0,
+        flag: null,
+      },
+      {
+        min: 500,
+        max: 1000,
+        a: 100,
+        b: 1,
+        flag: null,
+      },
+      {
+        min: 1000,
+        max: 0,
+        a: 0,
+        b: 0,
+        flag: null,
+      },
+    ],
+    deliveryBasePrice: 0,
+    orderMinimum: 0,
   });
 
   return (
