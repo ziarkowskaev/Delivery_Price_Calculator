@@ -1,4 +1,3 @@
-import { DialogCoords } from "./DialogCoords";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "@radix-ui/react-label";

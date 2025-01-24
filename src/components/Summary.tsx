@@ -1,4 +1,3 @@
-import { Label } from "@radix-ui/react-label";
 import { PriceBreakdown } from "./PriceBreakdown";
 import { useState } from "react";
 

@@ -4,7 +4,7 @@ import { Label } from "@radix-ui/react-label";
 import { LocationSearch } from "./LocationSearch";
 import { useFormDispatch, useFormValue } from "@/context/formContext";
 import { useEffect, useState } from "react";
-import { Formik, Field, Form } from "formik";
+import { Formik, Form } from "formik";
 import { FormInput, VenueData } from "@/types/types";
 import * as Yup from "yup";
 import axios from "axios";
@@ -17,6 +17,8 @@ export const DeliveryForm = () => {
   const [cartValue, setCartValue] = useState(formData.cartValue);
   const [userLongitude, setUserLongitude] = useState(24.82958);
   const [userLatitude, setUserLatitude] = useState(60.18527);
+  const [distance, setDistance] = useState(0);
+  const [validDistance, setValidDistance] = useState(true);
 
   const [venueData, setVenueData] = useState({
     orderMinimumNoSurcharge: 0,
@@ -97,10 +99,25 @@ export const DeliveryForm = () => {
       });
   }, [venue]);
 
-  const distance = getDistance(
-    { latitude: userLatitude, longitude: userLongitude },
-    { latitude: venueData.venueLatitude, longitude: venueData.venueLongitude },
-  );
+  useEffect(() => {
+    const distance = getDistance(
+      { latitude: userLatitude, longitude: userLongitude },
+      {
+        latitude: venueData.venueLatitude,
+        longitude: venueData.venueLongitude,
+      },
+    );
+    setDistance(distance);
+
+    if(distance > venueData.distanceRanges[venueData.distanceRanges.length-1].min){
+      setValidDistance(false);
+    }else{
+      setValidDistance(true);
+    }
+
+  }, [venue, userLatitude, userLongitude]);
+
+  console.log("min order", venueData.orderMinimum)
 
   const DeliveryFormSchema = Yup.object().shape({
     venueSlug: Yup.string()
@@ -109,7 +126,7 @@ export const DeliveryForm = () => {
       .required("Provide venue information."),
     cartValue: Yup.number()
       .min(
-        venueData.orderMinimum / 100,
+        (venueData.orderMinimum / 100),
         `Cart value must be at least €${venueData.orderMinimum / 100}`,
       )
       .required("Provide cart value."),
@@ -118,16 +135,6 @@ export const DeliveryForm = () => {
       .min(-180)
       .max(180)
       .required("Provide longitude."),
-    distance: Yup.number().test(
-      "max-distance",
-      `Delivery is not available for your location.`,
-      function () {
-        const maxDistance = Math.max(
-          ...venueData.distanceRanges.map((range) => range.max || 0),
-        );
-        return distance <= maxDistance;
-      },
-    ),
   });
 
   const update = () => {
@@ -162,10 +169,10 @@ export const DeliveryForm = () => {
         }}
         validationSchema={DeliveryFormSchema}
       >
-        {({ errors, touched }) => (
+        {({ errors, isValid }) => (
           <Form>
             <div className="grid w-full max-w-m items-center gap-1.5 text-neutral-800">
-              <div>{errors.venueSlug}</div>
+              <div>{errors.cartValue}</div>
 
               <Label htmlFor="venue">Venue</Label>
               <Input
@@ -200,7 +207,12 @@ export const DeliveryForm = () => {
               setUserLatitude={setUserLatitude}
               setUserLongitude={setUserLongitude}
             />
-            <Button onClick={update} type="submit" className="mt-2">
+            {!validDistance && (
+          <div className="text-red-500 mt-2">
+            Delivery not available in your location.
+          </div>
+        )}
+            <Button disabled={!validDistance} onClick={update} type="submit" className="mt-2">
               Calculate delivery price
             </Button>
           </Form>

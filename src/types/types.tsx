@@ -32,3 +32,10 @@ export interface VenueData {
   venueLatitude: number;
   venueLongitude: number;
 }
+
+export interface UserCoords {
+  userLatitude: number;
+  setUserLatitude: any;
+  userLongitude: number;
+  setUserLongitude: any;
+}

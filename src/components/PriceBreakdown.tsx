@@ -1,16 +1,9 @@
 import { useFormValue } from "@/context/formContext";
-import { DistanceRange, Summary } from "@/types/types";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { Button } from "./ui/button";
-import axios from "axios";
-const geolib = require("geolib");
-import { getDistance } from "geolib";
 import { Info } from "lucide-react";
 import { calculateDeliveryFee } from "@/lib/utils";
 
@@ -51,7 +44,7 @@ export const PriceBreakdown = ({ setTotalPrice }) => {
               {formData.orderMinimumNoSurcharge / 100} EUR.
             </HoverCardContent>
           </HoverCard>
-          <p data-raw-value="0">{smallOrderSurcharge}€</p>
+          <p data-raw-value="0">{smallOrderSurcharge.toFixed(2)}€</p>
         </div>
         <div className="text-center">
           <p>Delivery distance</p>
