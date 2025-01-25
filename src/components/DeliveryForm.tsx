@@ -185,9 +185,10 @@ export const DeliveryForm = () => {
                 className="bg-neutral-50"
                 value={venue}
                 id="venue"
-                data-test-id="venueSlug"
                 placeholder="Venue"
                 onChange={(e) => setVenue(e.target.value)}
+                data-test-id="venueSlug"
+                data-raw-value="home-assignment-venue-helsinki"
               />
               {!validVenueSlug && (
                 <Alert variant="destructive">
@@ -210,9 +211,10 @@ export const DeliveryForm = () => {
                 min={0}
                 step=".01"
                 id="cart_value"
-                data-test-id="cartValue"
                 placeholder="Cart value"
                 onChange={(e) => setCartValue(Number(e.target.value) || 0)}
+                data-test-id="cartValue"
+                data-raw-value="1055"
               />
               {errors.cartValue && touched.cartValue && (
                 <Alert variant="destructive">
@@ -246,6 +248,7 @@ export const DeliveryForm = () => {
               onClick={update}
               type="submit"
               className="mt-2"
+              data-test-id="calculateDeliveryPrice"
             >
               Calculate delivery price
             </Button>

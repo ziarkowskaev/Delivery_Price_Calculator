@@ -60,6 +60,8 @@ export const LocationSearch = ({
               value={userLatitude}
               onChange={(e) => setUserLatitude(Number(e.target.value) || 0)}
               step="0.001"
+              data-test-id="userLatitude"
+              data-raw-value="60.17094"
             />
           </div>
           <div className="mt-2">
@@ -73,6 +75,8 @@ export const LocationSearch = ({
               value={userLongitude}
               onChange={(e) => setUserLongitude(Number(e.target.value) || 0)}
               step="0.001"
+              data-test-id="userLongitude"
+              data-raw-value="24.93087"
             />
           </div>
         </div>
