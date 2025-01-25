@@ -28,7 +28,7 @@ export default function MyMap({
   zoom: number;
 }) {
   return (
-    <div style={{ borderRadius: "30px" }}>
+    <div style={{ borderRadius: "30px", marginTop: "8px" }}>
       <MapContainer
         center={position}
         zoom={zoom}

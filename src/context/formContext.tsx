@@ -32,7 +32,7 @@ export const FormContextProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [form, formDispatch] = useReducer(formReducer, {
-    venueSlug: "home-assignment-venue-helsinki",
+    venueSlug: "",
     cartValue: 0,
     distance: 0,
     orderMinimumNoSurcharge: 0,

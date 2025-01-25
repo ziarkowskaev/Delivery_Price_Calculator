@@ -9,18 +9,21 @@ import { FormInput, VenueData } from "@/types/types";
 import * as Yup from "yup";
 import axios from "axios";
 import { getDistance } from "geolib";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertTitle, AlertDescription } from "./ui/alert";
 
 export const DeliveryForm = () => {
   const dispatch = useFormDispatch();
   const formData = useFormValue();
-  const [venue, setVenue] = useState(formData.venueSlug);
-  const [cartValue, setCartValue] = useState(formData.cartValue);
-  const [userLongitude, setUserLongitude] = useState(24.82958);
-  const [userLatitude, setUserLatitude] = useState(60.18527);
-  const [distance, setDistance] = useState(0);
-  const [validDistance, setValidDistance] = useState(true);
+  const [venue, setVenue] = useState<string>(formData.venueSlug);
+  const [cartValue, setCartValue] = useState<number>(formData.cartValue);
+  const [userLatitude, setUserLatitude] = useState<number>(0);
+  const [userLongitude, setUserLongitude] = useState<number>(0);
+  const [distance, setDistance] = useState<number>(0);
+  const [validDistance, setValidDistance] = useState<boolean>(true);
+  const [validVenueSlug, setValidVenueSlug] = useState<boolean>(true);
 
-  const [venueData, setVenueData] = useState({
+  const [venueData, setVenueData] = useState<VenueData>({
     orderMinimumNoSurcharge: 0,
     distanceRanges: [
       {
@@ -47,8 +50,8 @@ export const DeliveryForm = () => {
     ],
     deliveryBasePrice: 0,
     orderMinimum: 0,
-    venueLatitude: 0,
-    venueLongitude: 0,
+    venueLatitude: 60.17094,
+    venueLongitude: 24.93087,
   });
 
   useEffect(() => {
@@ -57,6 +60,7 @@ export const DeliveryForm = () => {
         `https://consumer-api.development.dev.woltapi.com/home-assignment-api/v1/venues/${venue}/static`,
       )
       .then((response) => {
+        setValidVenueSlug(true);
         setVenueData((prevData: VenueData) => ({
           ...prevData,
           orderMinimum: response.data
@@ -72,6 +76,7 @@ export const DeliveryForm = () => {
       })
       .catch((error) => {
         console.log("Error fetching dynamic venue data:", error);
+        setValidVenueSlug(false);
       });
 
     axios
@@ -92,10 +97,11 @@ export const DeliveryForm = () => {
             ? response.data.venue_raw.delivery_specs.delivery_pricing.base_price
             : prevData.deliveryBasePrice,
         }));
-        console.log(venueData);
+        setValidVenueSlug(true);
       })
       .catch((error) => {
         console.log("Error fetching dynamic venue data:", error);
+        setValidVenueSlug(false);
       });
   }, [venue]);
 
@@ -109,33 +115,15 @@ export const DeliveryForm = () => {
     );
     setDistance(distance);
 
-    if(distance > venueData.distanceRanges[venueData.distanceRanges.length-1].min){
+    if (
+      distance >
+      venueData.distanceRanges[venueData.distanceRanges.length - 1].min
+    ) {
       setValidDistance(false);
-    }else{
+    } else {
       setValidDistance(true);
     }
-
   }, [venue, userLatitude, userLongitude]);
-
-  console.log("min order", venueData.orderMinimum)
-
-  const DeliveryFormSchema = Yup.object().shape({
-    venueSlug: Yup.string()
-      .min(2, "Too Short!")
-      .max(50, "Too Long!")
-      .required("Provide venue information."),
-    cartValue: Yup.number()
-      .min(
-        (venueData.orderMinimum / 100),
-        `Cart value must be at least €${venueData.orderMinimum / 100}`,
-      )
-      .required("Provide cart value."),
-    userLatitude: Yup.number().min(-90).max(90).required("Provide latitude."),
-    userLongitude: Yup.number()
-      .min(-180)
-      .max(180)
-      .required("Provide longitude."),
-  });
 
   const update = () => {
     dispatch({
@@ -158,22 +146,39 @@ export const DeliveryForm = () => {
     userLongitude: userLongitude,
   };
 
-  console.log(formData);
-
   return (
     <div>
       <Formik
         initialValues={initialValues}
+        validationSchema={(values) =>
+          Yup.object().shape({
+            venueSlug: Yup.string()
+              .min(2, "Too Short!")
+              .max(50, "Too Long!")
+              .required("Provide venue information."),
+            cartValue: Yup.number()
+              .min(
+                venueData.orderMinimum / 100 || 0,
+                `Cart value must be at least ${venueData.orderMinimum / 100 || 0}€`,
+              )
+              .required("Provide cart value."),
+            userLatitude: Yup.number()
+              .min(-90)
+              .max(90)
+              .required("Provide latitude."),
+            userLongitude: Yup.number()
+              .min(-180)
+              .max(180)
+              .required("Provide longitude."),
+          })
+        }
         onSubmit={(values, actions) => {
           actions.setSubmitting(false);
         }}
-        validationSchema={DeliveryFormSchema}
       >
-        {({ errors, isValid }) => (
+        {({ errors, isValid, touched }) => (
           <Form>
             <div className="grid w-full max-w-m items-center gap-1.5 text-neutral-800">
-              <div>{errors.cartValue}</div>
-
               <Label htmlFor="venue">Venue</Label>
               <Input
                 name="venueSlug"
@@ -184,6 +189,15 @@ export const DeliveryForm = () => {
                 placeholder="Venue"
                 onChange={(e) => setVenue(e.target.value)}
               />
+              {!validVenueSlug && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Error</AlertTitle>
+                  <AlertDescription>
+                    Provided venue slug is not in the database.
+                  </AlertDescription>
+                </Alert>
+              )}
             </div>
 
             <div className="grid w-full max-w-sm items-center gap-1.5 text-neutral-800 mt-2">
@@ -200,6 +214,16 @@ export const DeliveryForm = () => {
                 placeholder="Cart value"
                 onChange={(e) => setCartValue(Number(e.target.value) || 0)}
               />
+              {errors.cartValue && touched.cartValue && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Error</AlertTitle>
+                  <AlertDescription>
+                    Cart value is too small. Minimum value must be{" "}
+                    {venueData.orderMinimum / 100}€.
+                  </AlertDescription>
+                </Alert>
+              )}
             </div>
             <LocationSearch
               userLatitude={userLatitude}
@@ -208,11 +232,21 @@ export const DeliveryForm = () => {
               setUserLongitude={setUserLongitude}
             />
             {!validDistance && (
-          <div className="text-red-500 mt-2">
-            Delivery not available in your location.
-          </div>
-        )}
-            <Button disabled={!validDistance} onClick={update} type="submit" className="mt-2">
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>
+                  Delivery not available in your location.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <Button
+              disabled={!validDistance || (!validVenueSlug && isValid)}
+              onClick={update}
+              type="submit"
+              className="mt-2"
+            >
               Calculate delivery price
             </Button>
           </Form>

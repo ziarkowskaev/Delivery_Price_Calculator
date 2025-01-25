@@ -5,7 +5,7 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { Info } from "lucide-react";
-import { calculateDeliveryFee } from "@/lib/utils";
+import { calculateDeliveryFee } from "@/utils/utils";
 
 export const PriceBreakdown = ({ setTotalPrice }) => {
   const formData = useFormValue();

@@ -1,3 +1,5 @@
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertTitle, AlertDescription } from "./ui/alert";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "@radix-ui/react-label";
@@ -45,7 +47,7 @@ export const LocationSearch = ({
 
   return (
     <div>
-      <div className="grid w-full max-w-sm items-center text-neutral-800 my-4">
+      <div className="grid w-full max-w-sm items-center text-neutral-800 my-2">
         <div>
           <div>
             <Label htmlFor="latitude" className="text-right">
@@ -57,10 +59,10 @@ export const LocationSearch = ({
               type="number"
               value={userLatitude}
               onChange={(e) => setUserLatitude(Number(e.target.value) || 0)}
-              step="0.0001"
+              step="0.001"
             />
           </div>
-          <div>
+          <div className="mt-2">
             <Label htmlFor="longitude" className="text-right">
               User Longitude
             </Label>
@@ -70,7 +72,7 @@ export const LocationSearch = ({
               type="number"
               value={userLongitude}
               onChange={(e) => setUserLongitude(Number(e.target.value) || 0)}
-              step="0.0001"
+              step="0.001"
             />
           </div>
         </div>
