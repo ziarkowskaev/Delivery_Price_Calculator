@@ -12,6 +12,13 @@ import { getDistance } from "geolib";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "./ui/alert";
 
+interface FormValidation {
+  venueSlug: string;
+  cartValue: number;
+  userLatitude: number;
+  userongitude: number;
+}
+
 export const DeliveryForm = () => {
   const dispatch = useFormDispatch();
   const formData = useFormValue();

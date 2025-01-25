@@ -4,13 +4,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "@radix-ui/react-label";
 import dynamic from "next/dynamic";
-
-interface UserCoords {
-  userLatitude: number;
-  setUserLatitude: any;
-  userLongitude: number;
-  setUserLongitude: any;
-}
+import { UserCoords } from "@/types/types";
 
 const DynamicMap = dynamic(() => import("./Map"), {
   loading: () => <p>A map is loading</p>,

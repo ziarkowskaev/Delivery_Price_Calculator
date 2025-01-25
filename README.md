@@ -3,7 +3,7 @@
 First, run the development server in root of the project:
 
 ```bash
-npm i 
+npm i
 npm run dev
 ```
 

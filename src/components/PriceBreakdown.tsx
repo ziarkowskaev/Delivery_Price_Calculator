@@ -6,8 +6,13 @@ import {
 } from "@/components/ui/hover-card";
 import { Info } from "lucide-react";
 import { calculateDeliveryFee } from "@/utils/utils";
+import { FC } from "react";
 
-export const PriceBreakdown = ({ setTotalPrice }) => {
+interface PriceBreakdownProps {
+  setTotalPrice: (price: number) => void;
+}
+
+export const PriceBreakdown: FC<PriceBreakdownProps> = ({ setTotalPrice }) => {
   const formData = useFormValue();
 
   const smallOrderSurcharge =
